@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="PFM-HR: Pose Flow Matching for Humanoid Robots">
+  <meta name="keywords" content="Robotics, Whole-body Control, PFM-HR">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    PFM-HR: Pose Flow Matching for Humanoid Robots
+  </title>
+
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']] 
+         }
+      };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Light blue page background */
+    body {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    }
+
+    /* NRMF-style hero header */
+    .title-shadow {
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      font-weight: bold;
+      font-size: 3rem;
+      font-family: 'Arial', sans-serif;
+      color: #333;
+    }
+
+    .custom-button {
+      display: inline-block;
+      background-color: #000;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .custom-button:hover {
+      background-color: #eee;
+      color: #000;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      transform: scale(1.05);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .hero .publication-title,
+    .hero .publication-authors,
+    .hero .button-container .custom-button {
+      font-family: Inter, system-ui, Arial, sans-serif !important;
+    }
+
+    .hero .publication-title {
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: .2px;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+    }
+
+    .hero .button-container .custom-button {
+      font-weight: 700;
+    }
+
+    .method-legend {
+      font-weight: 800;
+      color: #004bb3;
+      text-align: center;
+      margin-top: 12px;
+    }
+  </style>
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <style>
+    .image-container {
+    width: 100%;
+    padding-top: 100%; 
+    position: relative;
+    overflow: hidden;
+    }
+
+    .image-container img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+    }
+  
+  .card-module {
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    display: block; 
+    text-decoration: none !important; 
+    color: inherit !important; 
+    cursor: pointer;
+  }
+
+  .card-module:hover {
+    transform: scale(1.08); 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important; 
+    z-index: 10; 
+    position: relative;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+
+  section {
+    scroll-margin-top: 80px;
+  }
+
+  /* Constrain overall content width for a narrower layout
+     (exclude hero / abstract / method which keep their original width) */
+  section:not(.hero):not(#abstract):not(#method) .container {
+    max-width: 1100px !important;
+  }
+
+.floating-nav {
+  position: fixed;
+  right: 20px;
+  top: 50%; 
+  transform: translateY(-50%);
+  z-index: 1000; 
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+}
+
+.floating-nav-trigger {
+  width: 50px;
+  height: 50px;
+  background-color: #3273dc; 
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.floating-nav:hover .floating-nav-trigger {
+  transform: scale(1.1);
+}
+
+.floating-nav-content {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  margin-right: 15px; 
+  
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(20px); 
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.floating-nav:hover .floating-nav-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.floating-nav-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: center; 
+}
+
+.floating-nav-menu li {
+  margin-bottom: 10px;
+}
+
+.floating-nav-menu li:last-child {
+  margin-bottom: 0;
+}
+
+.floating-nav-link {
+  color: #4a4a4a;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  display: block;
+}
+
+.floating-nav-link:hover,
+.floating-nav-link.active {
+  color: #3273dc; 
+  font-weight: bold;
+}
+
+
+  </style>
+
+
+
+
+</head>
+
+<!-- Hero header -->
+<section class="hero" id="top-video">
+  <div class="hero-body" style="padding-bottom: 1rem;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <!-- Title Section -->
+          <h1 class="title is-1 publication-title title-shadow">
+            <span style="color: steelblue;">PFM-HR</span>: Pose Flow Matching for Humanoid Robots
+          </h1>
+
+          <!-- Authors -->
+          <div class="authors publication-authors" style="margin-top: 1.2rem;">
+            <p class="is-size-5" style="font-weight: 600; line-height: 1.8;">
+              <a href="https://scholar.google.com/citations?user=nU0FaU8AAAAJ&hl=zh-CN">Yukang Gao</a><sup>1,2</sup>,
+              <a href="https://scholar.google.com/citations?user=CPakAgoAAAAJ&hl=zh-CN">Yi Gu</a><sup>1,3</sup>,
+              <a href="https://scholar.google.com/citations?hl=zh-CN&user=mj9KoYkAAAAJ">Yangchen Zhou</a><sup>1</sup>,
+              <a href="https://scholar.google.com/citations?user=qd0Lh80AAAAJ&hl=zh-CN">Xingyu Chen</a><sup>1</sup>,
+              <a href="https://scholar.google.com/citations?hl=zh-CN&user=eY4-UVsAAAAJ">Zhaorui Wang</a><sup>1</sup>,
+              <a href="https://openreview.net/profile?id=~Fanghai_Zhang1">Fanghai Zhang</a><sup>1</sup>,
+              <a href="https://scholar.google.com/citations?hl=en&user=oHzmOiQAAAAJ">Hanyang Cao</a><sup>1,2</sup>,
+              <a href="https://scholar.google.com/citations?hl=en&user=cl_8rL0AAAAJ&view_op=list_works&sortby=pubdate">Zhengyang Shen</a><sup>3</sup>,
+              <a href="https://scholar.google.com/citations?hl=en&user=XNojE68AAAAJ">Ji Ma</a><sup>2</sup>,
+              <a href="https://openreview.net/profile?id=~Runhan_Zhang1">Runhan Zhang</a><sup>2,4</sup>,
+              <a href="https://www.leihan.org/">Lei Han</a><sup>2,&dagger;</sup>,
+              <a href="https://scholar.google.com/citations?user=Mu__bJEAAAAJ&hl=en">Renjing Xu</a><sup>1,&dagger;</sup>
+            </p>
+          </div>
+
+          <!-- Affiliations -->
+          <div class="affiliations" style="margin-top: 0.8rem;">
+            <p class="is-size-6" style="color: #555; line-height: 1.8;">
+              <sup>1</sup>HKUST(GZ)&nbsp;&nbsp;&nbsp;
+              <sup>2</sup>Noitom Robotics&nbsp;&nbsp;&nbsp;
+              <sup>3</sup>Google&nbsp;&nbsp;&nbsp;
+              <sup>4</sup>SIGS, Tsinghua University
+            </p>
+            <p class="is-size-6" style="color: #777;">
+              <sup>&dagger;</sup>Corresponding author
+            </p>
+          </div>
+
+          <!-- Buttons Section -->
+          <div class="button-container">
+            <!-- Paper Button -->
+            <a href="#" target="_blank" class="custom-button">
+              <i class="fas fa-file-pdf"></i> Paper
+            </a>
+
+            <!-- arXiv Button -->
+            <a href="#" target="_blank" class="custom-button">
+              <i class="ai ai-arxiv"></i> arXiv
+            </a>
+
+            <!-- Code Button -->
+            <a href="#" target="_blank" class="custom-button">
+              <i class="fab fa-github"></i> Code
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Abstract. -->
+
+<section class="section" style="margin-top: 0.5rem;" id="abstract">
+  <div class="container">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-2">Abstract</h2>
+        <div class="content has-text-justified" style="font-size: 1rem; max-width: 50%; margin: 3rem auto 0 auto;">
+          <p>
+            Motion priors improve reinforcement learning for physics-based humanoid
+            tracking, but temporal priors require ordered motion clips, while pose priors
+            provide limited guidance for policy-induced pose transitions. We present
+            <i>Pose Flow Matching for Humanoid Robots</i> (PFM-HR), a reusable flow matching
+            prior trained directly on large scale unordered pose data. PFM-HR introduces the
+            <i>Pose Geometry Score</i> (PGS), which quantifies how joint coordinate changes
+            during rollouts align with the local geometry of pose variation captured by the
+            prior. Using PGS to modulate the tracking reward guides policy exploration
+            toward structured pose changes while keeping the prior frozen across tracking
+            tasks. Experiments demonstrate that PFM-HR improves both single-motion and
+            general motion tracking, especially for highly dynamic motions.
+
+  
+          </p>
+
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+
+
+<section class="section" style="margin-top: 0rem;background-color: #fafafa;" id="method">
+  <div class="container">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-2">Method Overview</h2>
+        <div class="content has-text-justified" style="font-size: 1rem; max-width: 60%; margin: 3rem auto 0 auto;">
+        <div class="columns is-centered">
+            <div class="column is-full" style="margin-top: 3rem;margin-bottom: 1rem;">
+                <img src="./static/images/pipeline.png" alt="" style="width: 100%;" />
+            </div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section" id="tracking">
+
+  <!-- Title outside the card -->
+  <h2 class="title is-2"
+    style="text-align: center; padding-bottom: 25px; color:#004bb3">
+    Motion Tracking
+  </h2>
+
+  <!-- Card container -->
+  <div class="container"
+    style="
+      max-width: 80%;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    ">
+
+    <div class="columns is-centered">
+      <div class="column is-full">
+
+        <!-- ===================== Single Motion Tracking ===================== -->
+        <h3 class="title is-3 has-text-centered" style="color: #333333; margin-top: 0; margin-bottom: 8px;">Single Motion Tracking</h3>
+
+        <p class="has-text-centered is-size-5"
+          style="max-width: 90%; margin: 0 auto 30px auto;">
+          Visual comparison on single-motion tracking of dynamic skills. PFM-HR masters these skills
+          with fewer training samples and higher tracking accuracy than both baselines.
+        </p>
+
+        <!-- Backflip -->
+        <p class="has-text-centered is-size-4" style="font-weight: 800; margin: 25px 0 10px;">Backflip</p>
+        <p class="has-text-centered is-size-6" style="max-width: 90%; margin: 0 auto 0 auto; color: #555;">
+          <b>14.3%</b> fewer samples and <b>6.3%</b> lower position error vs ADD w/ PDF-HR (ADD fails to converge).
+        </p>
+        <div class="columns" style="margin: 0;">
+          <div class="column">
+            <p class="method-legend">ADD</p>
+          </div>
+          <div class="column">
+            <p class="method-legend">ADD w/ PDF-HR</p>
+          </div>
+          <div class="column">
+            <p class="method-legend">ADD w/ PFM-HR</p>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/backflip_add.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/backflip_pdfhr.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/backflip_pfmhr.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+        </div>
+
+        <!-- Double Kong -->
+        <p class="has-text-centered is-size-4" style="font-weight: 800; margin: 25px 0 10px;">Double Kong</p>
+        <p class="has-text-centered is-size-6" style="max-width: 90%; margin: 0 auto 0 auto; color: #555;">
+          <b>28.8%</b> fewer samples and <b>9.7%</b> lower position error vs ADD w/ PDF-HR (ADD fails to converge).
+        </p>
+        <div class="columns" style="margin: 0;">
+          <div class="column">
+            <p class="method-legend">ADD</p>
+          </div>
+          <div class="column">
+            <p class="method-legend">ADD w/ PDF-HR</p>
+          </div>
+          <div class="column">
+            <p class="method-legend">ADD w/ PFM-HR</p>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/doublekong_add.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/doublekong_pdfhr.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+          <div class="column">
+            <video autoplay muted loop playsinline controls src="./static/videos/comparison/doublekong_pfmhr.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+        </div>
+
+        <!-- ===================== General Motion Tracking ===================== -->
+        <hr style="border: none; border-top: 2px solid #e5e5e5; margin: 45px 0 25px 0;">
+
+        <h3 class="title is-3 has-text-centered" style="color: #333333;">General Motion Tracking</h3>
+
+        <p class="has-text-centered is-size-5" style="max-width: 80%; margin: 20px auto 30px auto;">
+          General-motion tracking across episode lengths. PFM-HR reaches higher success rates
+          with fewer training samples than both baselines.
+        </p>
+
+        <div class="columns is-centered">
+          <div class="column is-full">
+            <img src="./static/images/general_motion_curves.png"
+                 alt="General motion tracking training curves on the LaFAN1 subset"
+                 style="width: 100%; border-radius: 10px;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--Motion retargeting-->
+<section class="section" id="retargeting">
+
+  <h2 class="title is-2"
+    style="text-align: center; padding-bottom: 25px; color:#004bb3">
+    Deployment in Real World
+  </h2>
+
+  <!-- Card container -->
+  <div class="container"
+    style="
+      max-width: 80%;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    ">
+
+    <div class="columns is-centered">
+      <div class="column is-full">
+
+
+        <p class="has-text-centered is-size-5"
+          style="max-width: 100%; margin: 0 auto;margin-bottom: 3rem;">
+          We deploy with the BeyondMimic pipeline, adding PFM-HR only as a frozen prior during
+          simulation training. Compared to the original BeyondMimic, BeyondMimic w/ PFM-HR cuts the simulation samples
+          needed to reach by
+          <span style="font-weight: 800; color: #004bb3;">24.2%</span> (Spinkick), and
+          <span style="font-weight: 800; color: #004bb3;">15.1%</span> (Kick combo).
+         
+        </p>
+        <div class="columns">
+          <div class="column">
+            <h3 class="title is-3" style="text-align: center; margin-bottom: 10px; font-size: x-large;">Kick Combo</h3>
+            <video autoplay muted loop playsinline controls src="./static/videos/real/kick_combo.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+          <div class="column">
+            <h3 class="title is-3" style="text-align: center; margin-bottom: 10px; font-size: x-large;">Spin Kick</h3>
+            <video autoplay muted loop playsinline controls src="./static/videos/real/spinkick.mp4" width="100%" style="border-radius:10px;"></video>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.interpolation-panel img {
+    border-radius: 5px;
+    border: 1px solid #dbdbdb; 
+}
+.image-wrapper-fix img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+</style>
+
+
+
+
+</body>
+
+</html>
